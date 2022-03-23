@@ -9,12 +9,14 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./utils/AcceptedToken.sol";
 import "./interface/IWastedWarrior.sol";
+import "./utils/TokenWithdrawable.sol";
 
 contract WastedMarket is
     ReentrancyGuard,
     Ownable,
     AcceptedToken,
-    IERC721Receiver
+    IERC721Receiver,
+    TokenWithdrawable
 {
     using SafeMath for uint256;
 
@@ -49,6 +51,13 @@ contract WastedMarket is
 
     constructor(IWastedWarrior _wastedContract, IERC20 _acceptedToken)
         AcceptedToken(_acceptedToken)
+    {
+        wastedContract = _wastedContract;
+    }
+
+    function setWastedContract(IWastedWarrior _wastedContract)
+        external
+        onlyOwner
     {
         wastedContract = _wastedContract;
     }
@@ -96,11 +105,7 @@ contract WastedMarket is
         emit WastedBought(wastedId, buyer, seller, price);
     }
 
-    function offer(uint256 wastedId, uint256 offerPrice)
-        external
-        payable
-        nonReentrant
-    {
+    function offer(uint256 wastedId, uint256 offerPrice) external nonReentrant {
         require(!paused);
         address buyer = msg.sender;
         uint256 currentOffer = wastedsOffers[wastedId][buyer];
@@ -109,14 +114,14 @@ contract WastedMarket is
 
         require(buyer != ownerOf[wastedId]);
         require(offerPrice != currentOffer);
-        require(msg.value == requiredValue);
 
+        collectToken(buyer, address(this), requiredValue);
         wastedsOffers[wastedId][buyer] = offerPrice;
 
         if (needRefund) {
             uint256 returnedValue = currentOffer - offerPrice;
 
-            collectToken(address(this), buyer, returnedValue);
+            refundToken(buyer, returnedValue);
             // (bool success, ) = buyer.call{value: returnedValue}("");
             // require(success);
         }
@@ -150,8 +155,9 @@ contract WastedMarket is
 
         wastedsOffers[wastedId][caller] = 0;
 
-        (bool success, ) = caller.call{value: offerPrice}("");
-        require(success);
+        refundToken(caller, offerPrice);
+        // (bool success, ) = caller.call{value: offerPrice}("");
+        // require(success);
 
         emit WastedOfferCanceled(wastedId, caller);
     }
@@ -166,11 +172,11 @@ contract WastedMarket is
 
         wastedsOnSale[wastedId] = 0;
 
-        collectToken(buyer, seller, price - marketFee);
+        refundToken(seller, price.sub(marketFee));
         // (bool isTransferToSeller, ) = seller.call{value: price - marketFee}("");
         // require(isTransferToSeller);
 
-        collectToken(buyer, owner(), marketFee);
+        refundToken(owner(), marketFee);
         // (bool isTransferToTreasury, ) = owner().call{value: marketFee}("");
         // require(isTransferToTreasury);
 

@@ -33,6 +33,10 @@ contract AcceptedToken is Ownable {
         acceptedToken.safeTransferFrom(from, destAddr, amount);
     }
 
+    function refundToken(address to, uint256 amount) public {
+        acceptedToken.transferFrom(address(this), to, amount);
+    }
+
     /**
      * @dev Sets accepted token using in the ecosystem.
      */
