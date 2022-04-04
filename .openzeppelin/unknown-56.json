@@ -1,0 +1,164 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x41d5FE4f2ed0369057f87E9aB90BC4511e3a8d1a",
+    "txHash": "0x9a7102066d9ed52e5e2a3601da0af5b24c3e0edeafc49fdc51f4c7932eacfc7c"
+  },
+  "proxies": [
+    {
+      "address": "0xC122fC4D0284D6de24c019AD9a2a64d8c2362B54",
+      "txHash": "0x3075e634ba2604220b014f44e1ee5ac69833c04835b1228403ac481f634add8e",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "0e88e1603f63186459d953857dfc2414fc40ba2de3e8868f07d9cf37a6bf58cd": {
+      "address": "0xCE5e5844B5b66c179E5FFfeb69246B7170cDFC20",
+      "txHash": "0x6684d2633ac7e982010ba9889f25fbd9a97f6f44c7eef7ad84193ea56b845720",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "../@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:74"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "../@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:87"
+          },
+          {
+            "contract": "AcceptedToken",
+            "label": "acceptedToken",
+            "type": "t_contract(IERC20Upgradeable)334",
+            "src": "../project:/contracts/utils/AcceptedToken.sol:14"
+          },
+          {
+            "contract": "TokenWithdrawable",
+            "label": "tokenBlacklist",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "../project:/contracts/utils/TokenWithdrawable.sol:12"
+          },
+          {
+            "contract": "WastedMarket",
+            "label": "wastedContract",
+            "type": "t_contract(IWastedWarrior)3079",
+            "src": "../project:/contracts/WastedMarket.sol:43"
+          },
+          {
+            "contract": "WastedMarket",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "../project:/contracts/WastedMarket.sol:45"
+          },
+          {
+            "contract": "WastedMarket",
+            "label": "marketFeeInPercent",
+            "type": "t_uint256",
+            "src": "../project:/contracts/WastedMarket.sol:46"
+          },
+          {
+            "contract": "WastedMarket",
+            "label": "floorprice",
+            "type": "t_uint256",
+            "src": "../project:/contracts/WastedMarket.sol:47"
+          },
+          {
+            "contract": "WastedMarket",
+            "label": "PERCENT",
+            "type": "t_uint256",
+            "src": "../project:/contracts/WastedMarket.sol:48"
+          },
+          {
+            "contract": "WastedMarket",
+            "label": "wastedsOnSale",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "../project:/contracts/WastedMarket.sol:49"
+          },
+          {
+            "contract": "WastedMarket",
+            "label": "wastedsOffers",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "../project:/contracts/WastedMarket.sol:50"
+          },
+          {
+            "contract": "WastedMarket",
+            "label": "ownerOf",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "../project:/contracts/WastedMarket.sol:51"
+          }
+        ],
+        "types": {
+          "t_contract(IWastedWarrior)3079": {
+            "label": "contract IWastedWarrior"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_contract(IERC20Upgradeable)334": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    }
+  }
+}

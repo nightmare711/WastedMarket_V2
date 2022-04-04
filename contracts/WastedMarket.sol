@@ -2,40 +2,40 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./utils/AcceptedToken.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "./utils/AcceptedTokenUpgradeable.sol";
 import "./interface/IWastedWarrior.sol";
 import "./utils/TokenWithdrawable.sol";
 
 contract WastedMarket is
-    ReentrancyGuard,
-    Ownable,
-    AcceptedToken,
-    IERC721Receiver,
+    ReentrancyGuardUpgradeable,
+    OwnableUpgradeable,
+    AcceptedTokenUpgradeable,
+    IERC721ReceiverUpgradeable,
     TokenWithdrawable
 {
-    using SafeMath for uint256;
+    using SafeMathUpgradeable for uint256;
 
-    modifier onlyWastedOwner(uint256 wastedId, address caller) {
-        ownerOf[wastedId] = caller;
+    modifier onlyWastedOwner(uint256 warriorId, address caller) {
+        ownerOf[warriorId] = caller;
         _;
     }
 
-    event WastedOfferCanceled(uint256 indexed wastedId, address buyer);
-    event WastedListed(uint256 wastedId, uint256 price, address seller);
-    event WastedDelisted(uint256 indexed tunvierId);
+    event WastedOfferCanceled(uint256 indexed warriorId, address buyer);
+    event WastedListed(uint256 warriorId, uint256 price, address seller);
+    event WastedDelisted(uint256 indexed warriorId);
     event WastedBought(
-        uint256 indexed tunvierId,
+        uint256 indexed warriorId,
         address buyer,
         address seller,
         uint256 price
     );
     event WastedOffered(
-        uint256 indexed tunvierId,
+        uint256 indexed warriorId,
         address buyer,
         uint256 price
     );
@@ -43,16 +43,24 @@ contract WastedMarket is
     IWastedWarrior public wastedContract;
 
     bool public paused;
-    uint256 marketFeeInPercent;
-    uint256 constant PERCENT = 100;
+    uint256 public marketFeeInPercent;
+    uint256 public floorprice;
+    uint256 public PERCENT;
     mapping(uint256 => uint256) public wastedsOnSale;
     mapping(uint256 => mapping(address => uint256)) public wastedsOffers;
     mapping(uint256 => address) public ownerOf;
 
-    constructor(IWastedWarrior _wastedContract, IERC20 _acceptedToken)
-        AcceptedToken(_acceptedToken)
-    {
+    function initialize(
+        IWastedWarrior _wastedContract,
+        IERC20Upgradeable _acceptedToken
+    ) public initializer {
+        __Ownable_init_unchained();
+        __ReentrancyGuard_init_unchained();
+        TokenWithdrawable.initialize();
+        AcceptedTokenUpgradeable.initialize(_acceptedToken);
         wastedContract = _wastedContract;
+        PERCENT = 100;
+        marketFeeInPercent = 4;
     }
 
     function setWastedContract(IWastedWarrior _wastedContract)
@@ -62,61 +70,88 @@ contract WastedMarket is
         wastedContract = _wastedContract;
     }
 
-    function listing(uint256 wastedId, uint256 price) external {
-        require(!paused);
-        require(price > 0);
-
-        wastedContract.safeTransferFrom(msg.sender, address(this), wastedId);
-
-        wastedsOnSale[wastedId] = price;
-        ownerOf[wastedId] = msg.sender;
-
-        emit WastedListed(wastedId, price, msg.sender);
-    }
-
-    function delist(uint256 wastedId)
+    function setMarketFeeInPercent(uint256 _marketFeeInPercent)
         external
-        onlyWastedOwner(wastedId, msg.sender)
+        onlyOwner
     {
-        require(!paused, "WW: paused");
-        require(wastedsOnSale[wastedId] > 0);
-
-        wastedsOnSale[wastedId] = 0;
-        wastedContract.transferFrom(address(this), msg.sender, wastedId);
-
-        emit WastedDelisted(wastedId);
+        marketFeeInPercent = _marketFeeInPercent;
     }
 
-    function buy(
-        uint256 wastedId,
-        uint256 expectedPrice,
-        address buyer
-    ) external payable nonReentrant {
-        uint256 price = wastedsOnSale[wastedId];
-        address seller = ownerOf[wastedId];
+    function setFloorPrice(uint256 _floorprice) external onlyOwner {
+        floorprice = _floorprice;
+    }
+
+    function listing(uint256 warriorId, uint256 price) external {
+        uint256 oldListing = wastedContract.getWarriorListing(warriorId);
+        require(!paused, "WM: paused");
+        require(oldListing == 0, "WM: delist old contract");
+        require(price > 0, "WM: invalid price");
+        require(price >= floorprice, "WM: price must greater than floorprice");
+
+        if (wastedsOnSale[warriorId] == 0) {
+            wastedContract.safeTransferFrom(
+                msg.sender,
+                address(this),
+                warriorId
+            );
+            ownerOf[warriorId] = msg.sender;
+        } else {
+            require(ownerOf[warriorId] == msg.sender, "WM: invalid owner");
+        }
+
+        wastedsOnSale[warriorId] = price;
+
+        emit WastedListed(warriorId, price, msg.sender);
+    }
+
+    function delist(uint256 warriorId)
+        external
+        onlyWastedOwner(warriorId, msg.sender)
+    {
+        require(!paused, "WM: paused");
+        require(wastedsOnSale[warriorId] > 0, "WM: delist first");
+
+        wastedsOnSale[warriorId] = 0;
+        wastedContract.transferFrom(address(this), msg.sender, warriorId);
+
+        emit WastedDelisted(warriorId);
+    }
+
+    function buy(uint256 warriorId, uint256 expectedPrice)
+        external
+        nonReentrant
+    {
+        uint256 price = wastedsOnSale[warriorId];
+        address seller = ownerOf[warriorId];
+        address buyer = msg.sender;
 
         require(!paused, "WW: paused");
         require(buyer != seller);
         require(price == expectedPrice);
         require(price > 0, "WW: not sale");
 
-        _makeTransaction(wastedId, buyer, seller, price);
+        collectToken(buyer, address(this), price);
 
-        emit WastedBought(wastedId, buyer, seller, price);
+        _makeTransaction(warriorId, buyer, seller, price);
+
+        emit WastedBought(warriorId, buyer, seller, price);
     }
 
-    function offer(uint256 wastedId, uint256 offerPrice) external nonReentrant {
+    function offer(uint256 warriorId, uint256 offerPrice)
+        external
+        nonReentrant
+    {
         require(!paused);
         address buyer = msg.sender;
-        uint256 currentOffer = wastedsOffers[wastedId][buyer];
+        uint256 currentOffer = wastedsOffers[warriorId][buyer];
         bool needRefund = offerPrice < currentOffer;
         uint256 requiredValue = needRefund ? 0 : offerPrice - currentOffer;
 
-        require(buyer != ownerOf[wastedId]);
+        require(buyer != ownerOf[warriorId]);
         require(offerPrice != currentOffer);
 
         collectToken(buyer, address(this), requiredValue);
-        wastedsOffers[wastedId][buyer] = offerPrice;
+        wastedsOffers[warriorId][buyer] = offerPrice;
 
         if (needRefund) {
             uint256 returnedValue = currentOffer - offerPrice;
@@ -126,61 +161,63 @@ contract WastedMarket is
             // require(success);
         }
 
-        emit WastedOffered(wastedId, buyer, offerPrice);
+        emit WastedOffered(warriorId, buyer, offerPrice);
     }
 
     function acceptOffer(
-        uint256 wastedId,
+        uint256 warriorId,
         address buyer,
         uint256 expectedPrice
-    ) external nonReentrant onlyWastedOwner(wastedId, msg.sender) {
+    ) external nonReentrant onlyWastedOwner(warriorId, msg.sender) {
         require(!paused);
-        uint256 offeredPrice = wastedsOffers[wastedId][buyer];
+        uint256 offeredPrice = wastedsOffers[warriorId][buyer];
         address seller = msg.sender;
         require(expectedPrice == offeredPrice);
         require(buyer != seller);
 
-        wastedsOffers[wastedId][buyer] = 0;
+        wastedsOffers[warriorId][buyer] = 0;
 
-        _makeTransaction(wastedId, buyer, seller, offeredPrice);
+        _makeTransaction(warriorId, buyer, seller, offeredPrice);
 
-        emit WastedBought(wastedId, buyer, seller, offeredPrice);
+        emit WastedBought(warriorId, buyer, seller, offeredPrice);
     }
 
-    function abortOffer(uint256 wastedId) external nonReentrant {
+    function abortOffer(uint256 warriorId) external nonReentrant {
         address caller = msg.sender;
-        uint256 offerPrice = wastedsOffers[wastedId][caller];
+        uint256 offerPrice = wastedsOffers[warriorId][caller];
 
         require(offerPrice > 0);
 
-        wastedsOffers[wastedId][caller] = 0;
+        wastedsOffers[warriorId][caller] = 0;
 
         refundToken(caller, offerPrice);
         // (bool success, ) = caller.call{value: offerPrice}("");
         // require(success);
 
-        emit WastedOfferCanceled(wastedId, caller);
+        emit WastedOfferCanceled(warriorId, caller);
     }
 
     function _makeTransaction(
-        uint256 wastedId,
+        uint256 warriorId,
         address buyer,
         address seller,
         uint256 price
     ) private {
         uint256 marketFee = (price * marketFeeInPercent) / PERCENT;
 
-        wastedsOnSale[wastedId] = 0;
+        wastedsOnSale[warriorId] = 0;
 
         refundToken(seller, price.sub(marketFee));
         // (bool isTransferToSeller, ) = seller.call{value: price - marketFee}("");
         // require(isTransferToSeller);
 
-        refundToken(owner(), marketFee);
+        if (marketFee > 0) {
+            refundToken(owner(), marketFee);
+        }
         // (bool isTransferToTreasury, ) = owner().call{value: marketFee}("");
         // require(isTransferToTreasury);
 
-        wastedContract.transferFrom(address(this), buyer, wastedId);
+        wastedContract.transferFrom(address(this), buyer, warriorId);
     }
 
     function onERC721Received(

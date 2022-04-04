@@ -2,18 +2,20 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract TokenWithdrawable is Ownable {
-    using SafeERC20 for IERC20;
+contract TokenWithdrawable is OwnableUpgradeable {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     mapping(address => bool) internal tokenBlacklist;
-    uint256 public swapFund;
-    uint256 public burnFund;
 
     event TokenWithdrawn(address token, uint256 amount, address to);
+
+    function initialize() public initializer {
+        OwnableUpgradeable.__Ownable_init();
+    }
 
     /**
      * @notice Blacklists a token to be withdrawn from the contract.
@@ -26,7 +28,7 @@ contract TokenWithdrawable is Ownable {
      * @notice Withdraws any tokens in the contract.
      */
     function withdrawToken(
-        IERC20 token,
+        IERC20Upgradeable token,
         uint256 amount,
         address to
     ) external onlyOwner {
@@ -34,12 +36,6 @@ contract TokenWithdrawable is Ownable {
             !tokenBlacklist[address(token)],
             "TokenWithdrawable: blacklisted token"
         );
-        if (address(token) == address(this)) {
-            require(
-                token.balanceOf(address(this)) - amount >= swapFund + burnFund,
-                "sufficient funds"
-            );
-        }
         token.safeTransfer(to, amount);
         emit TokenWithdrawn(address(token), amount, to);
     }

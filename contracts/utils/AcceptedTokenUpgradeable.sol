@@ -2,17 +2,19 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract AcceptedToken is Ownable {
-    using SafeERC20 for IERC20;
+contract AcceptedTokenUpgradeable is OwnableUpgradeable {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     // Token to be used in the ecosystem.
-    IERC20 public acceptedToken;
+    IERC20Upgradeable public acceptedToken;
 
-    constructor(IERC20 tokenAddress) {
+    function initialize(IERC20Upgradeable tokenAddress) public initializer {
+        OwnableUpgradeable.__Ownable_init();
         acceptedToken = tokenAddress;
     }
 
@@ -40,7 +42,10 @@ contract AcceptedToken is Ownable {
     /**
      * @dev Sets accepted token using in the ecosystem.
      */
-    function setAcceptedTokenContract(IERC20 tokenAddr) external onlyOwner {
+    function setAcceptedTokenContract(IERC20Upgradeable tokenAddr)
+        external
+        onlyOwner
+    {
         require(address(tokenAddr) != address(0));
         acceptedToken = tokenAddr;
     }

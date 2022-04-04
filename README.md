@@ -15,7 +15,7 @@
 ### verify
 
 ```
-  truffle run verify WastedWarrior@{contract-address} --network testnet
+  truffle run verify WastedMarket@{contract-address} --network testnet
 ```
 
 ### migrate
