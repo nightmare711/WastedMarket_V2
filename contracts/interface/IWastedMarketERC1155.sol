@@ -22,7 +22,6 @@ interface IWastedMarketERC1155 {
     event Offered(
         uint256 wastedId,
         address buyer,
-        address seller,
         uint256 amount,
         uint256 price
     );
@@ -53,8 +52,8 @@ interface IWastedMarketERC1155 {
     function offer(
         uint256 wastedId,
         uint256 offerPrice,
-        address seller,
-        address caller
+        address caller,
+        uint256 amount
     ) external returns (uint256);
 
     function acceptOffer(

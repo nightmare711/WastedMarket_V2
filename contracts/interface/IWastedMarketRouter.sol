@@ -36,8 +36,8 @@ interface IWastedMarketRouter {
         IWastedMarketERC1155 contractAddress,
         uint256 wastedId,
         address buyer,
-        address seller,
-        uint256 price
+        uint256 price,
+        uint256 amount
     );
 
     event OfferCanceled(

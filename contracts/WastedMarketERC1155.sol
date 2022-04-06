@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "./interface/IERC1155Support.sol";
@@ -21,7 +20,6 @@ contract WastedMarketERC1155 is
 {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    using EnumerableSet for EnumerableSet.UintSet;
 
     modifier onlyRouter() {
         require(hasRole(ROUTER_ROLE, msg.sender));
@@ -43,9 +41,7 @@ contract WastedMarketERC1155 is
 
     mapping(uint256 => uint256) tradeIdToTokenId;
     mapping(address => mapping(uint256 => BuyInfo)) public wastedsOnSale; //owner => tokenId => amount && price
-    mapping(address => mapping(uint256 => mapping(address => BuyInfo)))
-        public wastedsOffer;
-    mapping(address => EnumerableSet.UintSet) private balancesOf;
+    mapping(address => mapping(uint256 => BuyInfo)) public wastedsOffer; // caller => tokenId => amount && price
 
     constructor(
         IERC1155Support wastedExpand_,
@@ -55,7 +51,10 @@ contract WastedMarketERC1155 is
     ) AcceptedToken(tokenAddress) {
         marketFeeInPercent = marketFeeInPercent_;
         wastedExpand = wastedExpand_;
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(
+            DEFAULT_ADMIN_ROLE,
+            0x40cfBcFfA02B1Cae039921a604dbb5566520C03f
+        ); // address admin
         _setupRole(ROUTER_ROLE, router);
     }
 
@@ -87,7 +86,6 @@ contract WastedMarketERC1155 is
 
         wastedsOnSale[seller][wastedId].price = price;
         wastedsOnSale[seller][wastedId].amount = totalAmount;
-        balancesOf[seller].add(wastedId);
 
         emit Listing(wastedId, price, totalAmount, seller);
     }
@@ -106,7 +104,6 @@ contract WastedMarketERC1155 is
         wastedsOnSale[caller][wastedId].amount = 0;
 
         wastedExpand.transferFrom(address(this), caller, wastedId, amount, "");
-        balancesOf[caller].remove(wastedId);
 
         emit Delist(wastedId, caller);
     }
@@ -119,15 +116,15 @@ contract WastedMarketERC1155 is
     ) external override onlyRouter nonReentrant notPaused returns (uint256) {
         uint256 price = wastedsOnSale[seller][wastedId].price;
         uint256 amount = wastedsOnSale[seller][wastedId].amount;
-        uint256 currentOffer = wastedsOffer[seller][wastedId][buyer].price;
+        uint256 currentOffer = wastedsOffer[buyer][wastedId].price;
 
         require(buyer != seller);
         require(price > 0, "WEM: not on sale");
-        require(price == expectedPrice);
+        require(price == expectedPrice, "WEM: invalid price");
 
         if (currentOffer > 0) {
-            wastedsOffer[seller][wastedId][buyer].price = 0;
-            wastedsOffer[seller][wastedId][buyer].amount = 0;
+            wastedsOffer[buyer][wastedId].price = 0;
+            wastedsOffer[buyer][wastedId].amount = 0;
             refundToken(buyer, currentOffer);
         }
 
@@ -143,21 +140,19 @@ contract WastedMarketERC1155 is
     function offer(
         uint256 wastedId,
         uint256 offerPrice,
-        address seller,
-        address caller
+        address caller,
+        uint256 amount
     ) external override nonReentrant notPaused returns (uint256) {
         address buyer = caller;
-        uint256 currentOffer = wastedsOffer[seller][wastedId][buyer].price;
+        uint256 currentOffer = wastedsOffer[buyer][wastedId].price;
         bool needRefund = offerPrice < currentOffer;
         uint256 requiredValue = needRefund ? 0 : offerPrice - currentOffer;
-        uint256 amount = wastedsOnSale[seller][wastedId].amount;
 
-        require(buyer != seller, "WEM: cannot offer");
         require(offerPrice != currentOffer, "WEM: same offer");
 
         collectToken(buyer, address(this), requiredValue);
-        wastedsOffer[seller][wastedId][buyer].price = offerPrice;
-        wastedsOffer[seller][wastedId][buyer].amount = amount;
+        wastedsOffer[buyer][wastedId].price = offerPrice;
+        wastedsOffer[buyer][wastedId].amount = amount;
 
         if (needRefund) {
             uint256 returnedValue = currentOffer - offerPrice;
@@ -165,7 +160,7 @@ contract WastedMarketERC1155 is
             refundToken(buyer, returnedValue);
         }
 
-        emit Offered(wastedId, buyer, seller, amount, offerPrice);
+        emit Offered(wastedId, buyer, amount, offerPrice);
 
         return amount;
     }
@@ -176,21 +171,29 @@ contract WastedMarketERC1155 is
         uint256 expectedPrice,
         address seller
     ) external override nonReentrant notPaused returns (uint256) {
-        uint256 offeredPrice = wastedsOffer[seller][wastedId][buyer].price;
+        uint256 offeredPrice = wastedsOffer[buyer][wastedId].price;
 
-        uint256 amount = wastedsOnSale[seller][wastedId].amount;
+        uint256 amount = wastedsOnSale[buyer][wastedId].amount;
 
-        require(
-            amount == wastedsOffer[seller][wastedId][buyer].amount,
-            "WEM: invalid offer"
-        );
         require(expectedPrice == offeredPrice);
         require(buyer != seller);
 
-        wastedsOffer[seller][wastedId][buyer].price = 0;
-        wastedsOffer[seller][wastedId][buyer].amount = 0;
+        wastedsOffer[buyer][wastedId].price = 0;
+        wastedsOffer[buyer][wastedId].amount = 0;
 
-        _makeTransaction(wastedId, buyer, seller, offeredPrice, amount);
+        uint256 marketFee = (offeredPrice * marketFeeInPercent) / PERCENT;
+
+        refundToken(seller, offeredPrice.sub(marketFee));
+
+        if (marketFee > 0) {
+            refundToken(owner(), marketFee);
+        }
+
+        wastedsOnSale[seller][wastedId].price = 0;
+        wastedsOnSale[seller][wastedId].amount = 0;
+
+        wastedExpand.safeTransferFrom(seller, buyer, wastedId, amount, "");
+
         emit Bought(wastedId, buyer, seller, amount, offeredPrice);
 
         return amount;
@@ -201,12 +204,12 @@ contract WastedMarketERC1155 is
         address seller,
         address caller
     ) external override nonReentrant notPaused {
-        uint256 offerPrice = wastedsOffer[seller][wastedId][caller].price;
+        uint256 offerPrice = wastedsOffer[caller][wastedId].price;
 
         require(offerPrice > 0);
 
-        wastedsOffer[seller][wastedId][caller].price = 0;
-        wastedsOffer[seller][wastedId][caller].amount = 0;
+        wastedsOffer[caller][wastedId].price = 0;
+        wastedsOffer[caller][wastedId].amount = 0;
 
         refundToken(caller, offerPrice);
 

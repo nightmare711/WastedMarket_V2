@@ -1,3 +1,5 @@
+//SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -69,7 +71,7 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         uint256 wastedId,
         uint256 price,
         uint256 amount
-    ) external {
+    ) external onlySupportedAddress(marketContract) {
         marketContract.listing(wastedId, price, amount, msg.sender);
         emit Listing(marketContract, wastedId, price, amount, msg.sender);
     }
@@ -78,10 +80,10 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         IWastedMarketERC1155 marketContract,
         uint256 wastedId,
         uint256 offerPrice,
-        address seller
-    ) external {
-        marketContract.offer(wastedId, offerPrice, seller, msg.sender);
-        emit Offered(marketContract, wastedId, msg.sender, seller, offerPrice);
+        uint256 amount
+    ) external onlySupportedAddress(marketContract) {
+        marketContract.offer(wastedId, offerPrice, msg.sender, amount);
+        emit Offered(marketContract, wastedId, msg.sender, offerPrice, amount);
     }
 
     function buy(
@@ -89,7 +91,7 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         uint256 wastedId,
         address seller,
         uint256 expectedPrice
-    ) external {
+    ) external onlySupportedAddress(marketContract) {
         uint256 amount = marketContract.buy(
             wastedId,
             seller,
@@ -112,7 +114,7 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         uint256 wastedId,
         address buyer,
         uint256 expectedPrice
-    ) external {
+    ) external onlySupportedAddress(marketContract) {
         uint256 amount = marketContract.acceptOffer(
             wastedId,
             buyer,
@@ -134,7 +136,7 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         IWastedMarketERC1155 marketContract,
         uint256 wastedId,
         address seller
-    ) external {
+    ) external onlySupportedAddress(marketContract) {
         marketContract.abortOffer(wastedId, seller, msg.sender);
 
         emit OfferCanceled(marketContract, wastedId, seller, msg.sender);
@@ -142,6 +144,7 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
 
     function delist(IWastedMarketERC1155 marketContract, uint256 wastedId)
         external
+        onlySupportedAddress(marketContract)
     {
         marketContract.delist(wastedId, msg.sender);
 
