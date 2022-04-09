@@ -11,42 +11,48 @@ import "./WastedMarketERC1155.sol";
 
 contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
     modifier onlySupportedAddress(IWastedMarketERC1155 _tuniverContract) {
-        require(isSupported(address(_tuniverContract)), "WMR: unsupported");
+        require(isSupported(_tuniverContract), "WMR: unsupported");
         _;
     }
 
-    mapping(address => bool) supportedAddress;
+    mapping(IWastedMarketERC1155 => IERC1155Support) supportedAddress;
     bytes32 public CONTROLLER_ROLE;
-    address public receiverFee;
     uint256 public fee;
 
     function initialize() public initializer {
         __AccessControl_init();
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        receiverFee = msg.sender;
         CONTROLLER_ROLE = keccak256("CONTROLLER_ROLE");
     }
 
-    function setSupportedAddress(
-        IWastedMarketERC1155 _contractSupported,
-        bool _isSupport
-    ) external onlyRole(CONTROLLER_ROLE) {
-        supportedAddress[address(_contractSupported)] = _isSupport;
-        emit WastedMarketSupported(_contractSupported, _isSupport);
-    }
-
-    function setReceiverFee(address _receiverFee)
+    function unSupportedAddress(IWastedMarketERC1155 _contractSupported)
         external
         onlyRole(CONTROLLER_ROLE)
     {
-        receiverFee = _receiverFee;
+        supportedAddress[_contractSupported] = IERC1155Support(address(0));
+        emit WastedMarketSupported(
+            _contractSupported,
+            IERC1155Support(address(0))
+        );
     }
 
     function setFee(uint256 _fee) external onlyRole(CONTROLLER_ROLE) {
         fee = _fee;
     }
 
-    function isSupported(address _contract) public view returns (bool) {
+    function isSupported(IWastedMarketERC1155 _contract)
+        public
+        view
+        returns (bool)
+    {
+        return address(supportedAddress[_contract]) != address(0);
+    }
+
+    function getWastedExpandSupported(IWastedMarketERC1155 _contract)
+        public
+        view
+        returns (IERC1155Support)
+    {
         return supportedAddress[_contract];
     }
 
@@ -54,16 +60,16 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         IERC1155Support wastedExpand_,
         uint256 marketFeeInPercent_,
         IERC20 tokenAddress
-    ) external {
+    ) external onlyRole(CONTROLLER_ROLE) {
         WastedMarketERC1155 marketContract = new WastedMarketERC1155(
             wastedExpand_,
             marketFeeInPercent_,
             tokenAddress,
             address(this)
         );
-        supportedAddress[address(marketContract)] = true;
+        supportedAddress[marketContract] = wastedExpand_;
 
-        emit WastedMarketSupported(marketContract, true);
+        emit WastedMarketSupported(marketContract, wastedExpand_);
     }
 
     function listing(
@@ -132,14 +138,13 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         );
     }
 
-    function abortOffer(
-        IWastedMarketERC1155 marketContract,
-        uint256 wastedId,
-        address seller
-    ) external onlySupportedAddress(marketContract) {
-        marketContract.abortOffer(wastedId, seller, msg.sender);
+    function abortOffer(IWastedMarketERC1155 marketContract, uint256 wastedId)
+        external
+        onlySupportedAddress(marketContract)
+    {
+        marketContract.abortOffer(wastedId, msg.sender);
 
-        emit OfferCanceled(marketContract, wastedId, seller, msg.sender);
+        emit OfferCanceled(marketContract, wastedId, msg.sender);
     }
 
     function delist(IWastedMarketERC1155 marketContract, uint256 wastedId)
@@ -157,5 +162,12 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         onlySupportedAddress(marketContract)
     {
         marketContract.switchPause(_isPaused);
+    }
+
+    function setReceiverFee(
+        IWastedMarketERC1155 marketContract,
+        address _receiverFee
+    ) external onlyRole(CONTROLLER_ROLE) {
+        marketContract.setReceiverFee(_receiverFee);
     }
 }

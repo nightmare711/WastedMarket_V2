@@ -26,7 +26,7 @@ interface IWastedMarketERC1155 {
         uint256 price
     );
 
-    event OfferCanceled(uint256 wastedId, address seller, address caller);
+    event OfferCanceled(uint256 wastedId, address caller);
 
     struct BuyInfo {
         uint256 amount;
@@ -63,13 +63,11 @@ interface IWastedMarketERC1155 {
         address seller
     ) external returns (uint256);
 
-    function abortOffer(
-        uint256 wastedId,
-        address seller,
-        address caller
-    ) external;
+    function abortOffer(uint256 wastedId, address caller) external;
 
     function setMarketFee(uint256 _marketFee) external;
 
     function switchPause(bool isPaused) external;
+
+    function setReceiverFee(address _receiverFee) external;
 }

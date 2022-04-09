@@ -32,6 +32,7 @@ contract WastedMarketERC1155 is
     }
 
     uint256 public constant PERCENT = 100;
+    address public receiverFee = 0x40cfBcFfA02B1Cae039921a604dbb5566520C03f;
 
     IERC1155Support public wastedExpand;
 
@@ -56,6 +57,10 @@ contract WastedMarketERC1155 is
             0x40cfBcFfA02B1Cae039921a604dbb5566520C03f
         ); // address admin
         _setupRole(ROUTER_ROLE, router);
+    }
+
+    function setReceiverFee(address _receiverFee) external onlyRouter {
+        receiverFee = _receiverFee;
     }
 
     function setMarketFee(uint256 _marketFee) external onlyRouter {
@@ -150,7 +155,9 @@ contract WastedMarketERC1155 is
 
         require(offerPrice != currentOffer, "WEM: same offer");
 
-        collectToken(buyer, address(this), requiredValue);
+        if (!needRefund) {
+            collectToken(buyer, address(this), requiredValue);
+        }
         wastedsOffer[buyer][wastedId].price = offerPrice;
         wastedsOffer[buyer][wastedId].amount = amount;
 
@@ -186,7 +193,7 @@ contract WastedMarketERC1155 is
         refundToken(seller, offeredPrice.sub(marketFee));
 
         if (marketFee > 0) {
-            refundToken(owner(), marketFee);
+            refundToken(receiverFee, marketFee);
         }
 
         wastedsOnSale[seller][wastedId].price = 0;
@@ -199,11 +206,12 @@ contract WastedMarketERC1155 is
         return amount;
     }
 
-    function abortOffer(
-        uint256 wastedId,
-        address seller,
-        address caller
-    ) external override nonReentrant notPaused {
+    function abortOffer(uint256 wastedId, address caller)
+        external
+        override
+        nonReentrant
+        notPaused
+    {
         uint256 offerPrice = wastedsOffer[caller][wastedId].price;
 
         require(offerPrice > 0);
@@ -213,7 +221,7 @@ contract WastedMarketERC1155 is
 
         refundToken(caller, offerPrice);
 
-        emit OfferCanceled(wastedId, seller, caller);
+        emit OfferCanceled(wastedId, caller);
     }
 
     function _makeTransaction(
@@ -231,7 +239,7 @@ contract WastedMarketERC1155 is
         refundToken(seller, price.sub(marketFee));
 
         if (marketFee > 0) {
-            refundToken(owner(), marketFee);
+            refundToken(receiverFee, marketFee);
         }
 
         wastedExpand.transferFrom(address(this), buyer, wastedId, amount, "");

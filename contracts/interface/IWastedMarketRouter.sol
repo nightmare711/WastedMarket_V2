@@ -3,11 +3,12 @@
 pragma solidity ^0.8.0;
 
 import "./IWastedMarketERC1155.sol";
+import "./IERC1155Support.sol";
 
 interface IWastedMarketRouter {
     event WastedMarketSupported(
         IWastedMarketERC1155 contractAddress,
-        bool isSupport
+        IERC1155Support _wastedExpand
     );
     event Listing(
         IWastedMarketERC1155 contractAddress,
@@ -43,9 +44,11 @@ interface IWastedMarketRouter {
     event OfferCanceled(
         IWastedMarketERC1155 contractAddress,
         uint256 wastedId,
-        address seller,
         address caller
     );
 
-    function isSupported(address _contract) external view returns (bool);
+    function isSupported(IWastedMarketERC1155 _contract)
+        external
+        view
+        returns (bool);
 }
