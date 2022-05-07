@@ -76,7 +76,7 @@ contract WastedMarketERC1155 is
         uint256 price,
         uint256 amount,
         address seller
-    ) external override onlyRouter nonReentrant notPaused {
+    ) external override onlyRouter nonReentrant notPaused returns (uint256) {
         require(price > 0, "WEM: invalid price");
         uint256 totalAmount = wastedsOnSale[seller][wastedId].amount.add(
             amount
@@ -93,6 +93,8 @@ contract WastedMarketERC1155 is
         wastedsOnSale[seller][wastedId].amount = totalAmount;
 
         emit Listing(wastedId, price, totalAmount, seller);
+
+        return totalAmount;
     }
 
     function delist(uint256 wastedId, address caller)
@@ -180,7 +182,7 @@ contract WastedMarketERC1155 is
     ) external override nonReentrant notPaused returns (uint256) {
         uint256 offeredPrice = wastedsOffer[buyer][wastedId].price;
 
-        uint256 amount = wastedsOnSale[buyer][wastedId].amount;
+        uint256 amount = wastedsOffer[buyer][wastedId].amount;
 
         require(expectedPrice == offeredPrice);
         require(buyer != seller);
@@ -195,9 +197,6 @@ contract WastedMarketERC1155 is
         if (marketFee > 0) {
             refundToken(receiverFee, marketFee);
         }
-
-        wastedsOnSale[seller][wastedId].price = 0;
-        wastedsOnSale[seller][wastedId].amount = 0;
 
         wastedExpand.safeTransferFrom(seller, buyer, wastedId, amount, "");
 

@@ -38,7 +38,7 @@ interface IWastedMarketERC1155 {
         uint256 price,
         uint256 amount,
         address seller
-    ) external;
+    ) external returns (uint256);
 
     function delist(uint256 wastedId, address caller) external;
 

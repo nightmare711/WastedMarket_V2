@@ -78,8 +78,13 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         uint256 price,
         uint256 amount
     ) external onlySupportedAddress(marketContract) {
-        marketContract.listing(wastedId, price, amount, msg.sender);
-        emit Listing(marketContract, wastedId, price, amount, msg.sender);
+        uint256 totalAmount = marketContract.listing(
+            wastedId,
+            price,
+            amount,
+            msg.sender
+        );
+        emit Listing(marketContract, wastedId, price, totalAmount, msg.sender);
     }
 
     function offer(

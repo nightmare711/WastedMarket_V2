@@ -3,6 +3,6 @@ const WastedMarketRouter = artifacts.require("WastedMarketRouter");
 // Deploy new contract
 module.exports = async function (deployer) {
   const instance = await deployProxy(WastedMarketRouter, [], { initializer: 'initialize' });
-  console.log('Deployed', instance.owner.call());
+  // console.log('Deployed', instance.owner.call());
   // deployer.deploy(WastedWhitelist, '0xd1a4A413C0f11904CE952C074F35d4D091D13497');
 };
