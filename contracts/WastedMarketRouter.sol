@@ -116,7 +116,8 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
             msg.sender,
             seller,
             amount,
-            expectedPrice
+            expectedPrice,
+            false
         );
     }
 
@@ -139,7 +140,8 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
             buyer,
             msg.sender,
             amount,
-            expectedPrice
+            expectedPrice,
+            true
         );
     }
 

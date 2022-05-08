@@ -30,7 +30,8 @@ interface IWastedMarketRouter {
         address buyer,
         address seller,
         uint256 amount,
-        uint256 price
+        uint256 price,
+        bool isBoughtByOffer
     );
 
     event Offered(

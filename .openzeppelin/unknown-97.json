@@ -34,6 +34,16 @@
       "address": "0x582441e305cceD0183E1baB0452c6d2825a4F196",
       "txHash": "0x79dea5d0d54ea0064ee6edee2170ae9242ddcb91cf88ff260278077446b74115",
       "kind": "transparent"
+    },
+    {
+      "address": "0x170d78F1D1f9A63De34C30736bcDee055bB8946F",
+      "txHash": "0xc119d872f01705b7b14883fe1d9e0a35cef8b5cbeefb8296c3d171c884778d83",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xB2365Fe28f601E30C8443C781E0adb0A56aBb28c",
+      "txHash": "0x996f77ef1a14965e3e6144e763f4c90f282c72b210b5aacfa8c4b3a0ae7e859e",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -316,6 +326,226 @@
             "label": "contract IWastedMarketERC1155"
           },
           "t_contract(IERC1155Support)5818": {
+            "label": "contract IERC1155Support"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)34_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)34_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "5352f53f04a997cc72e8b14fcde9914110b9bec0411de43de68f66db5f0a5960": {
+      "address": "0x859FD2eD243ADDb3FfdC30b38e57da8Ca21E5173",
+      "txHash": "0x88448d2b7e66bd91e8081e2b5d09ebf1629833b0d9695ccaaa0e69d93eccb9f4",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "_roles",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)34_storage)",
+            "src": "../@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:235"
+          },
+          {
+            "contract": "WastedMarketRouter",
+            "label": "supportedAddress",
+            "type": "t_mapping(t_contract(IWastedMarketERC1155)5938,t_contract(IERC1155Support)5805)",
+            "src": "../project:/contracts/WastedMarketRouter.sol:18"
+          },
+          {
+            "contract": "WastedMarketRouter",
+            "label": "CONTROLLER_ROLE",
+            "type": "t_bytes32",
+            "src": "../project:/contracts/WastedMarketRouter.sol:19"
+          },
+          {
+            "contract": "WastedMarketRouter",
+            "label": "fee",
+            "type": "t_uint256",
+            "src": "../project:/contracts/WastedMarketRouter.sol:20"
+          }
+        ],
+        "types": {
+          "t_mapping(t_contract(IWastedMarketERC1155)5938,t_contract(IERC1155Support)5805)": {
+            "label": "mapping(contract IWastedMarketERC1155 => contract IERC1155Support)"
+          },
+          "t_contract(IWastedMarketERC1155)5938": {
+            "label": "contract IWastedMarketERC1155"
+          },
+          "t_contract(IERC1155Support)5805": {
+            "label": "contract IERC1155Support"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)34_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)34_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "9c2d78c59151772ccb0abca8344ef3e4182b3618725d79a4b0102837011f39c2": {
+      "address": "0x899C91E3CA611D6c80bd4a5FFDA3343E6e339642",
+      "txHash": "0xe381e84cdb1e44960edf8130c440c88b549a9519bbed67e8625b21b1fc349608",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "_roles",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)34_storage)",
+            "src": "../@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:235"
+          },
+          {
+            "contract": "WastedMarketRouter",
+            "label": "supportedAddress",
+            "type": "t_mapping(t_contract(IWastedMarketERC1155)5940,t_contract(IERC1155Support)5807)",
+            "src": "../project:/contracts/WastedMarketRouter.sol:18"
+          },
+          {
+            "contract": "WastedMarketRouter",
+            "label": "CONTROLLER_ROLE",
+            "type": "t_bytes32",
+            "src": "../project:/contracts/WastedMarketRouter.sol:19"
+          },
+          {
+            "contract": "WastedMarketRouter",
+            "label": "fee",
+            "type": "t_uint256",
+            "src": "../project:/contracts/WastedMarketRouter.sol:20"
+          }
+        ],
+        "types": {
+          "t_mapping(t_contract(IWastedMarketERC1155)5940,t_contract(IERC1155Support)5807)": {
+            "label": "mapping(contract IWastedMarketERC1155 => contract IERC1155Support)"
+          },
+          "t_contract(IWastedMarketERC1155)5940": {
+            "label": "contract IWastedMarketERC1155"
+          },
+          "t_contract(IERC1155Support)5807": {
             "label": "contract IERC1155Support"
           },
           "t_bytes32": {
