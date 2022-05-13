@@ -7,11 +7,21 @@ interface IWastedMarketERC1155 {
         uint256 wastedId,
         uint256 price,
         uint256 amount,
-        address seller
+        address seller,
+        uint256 listingId
     );
-    event Delist(uint256 wastedId, address seller);
+    event Delist(uint256 wastedId, address seller, uint256 listingId);
 
     event Bought(
+        uint256 wastedId,
+        address buyer,
+        address seller,
+        uint256 amount,
+        uint256 price,
+        uint256 listingId
+    );
+
+    event AcceptedOffer(
         uint256 wastedId,
         address buyer,
         address seller,
@@ -40,13 +50,18 @@ interface IWastedMarketERC1155 {
         address seller
     ) external returns (uint256);
 
-    function delist(uint256 wastedId, address caller) external;
+    function delist(
+        uint256 wastedId,
+        address caller,
+        uint256 listingId
+    ) external;
 
     function buy(
         uint256 wastedId,
         address seller,
         uint256 expectedPrice,
-        address buyer
+        address buyer,
+        uint256 listingId
     ) external returns (uint256);
 
     function offer(

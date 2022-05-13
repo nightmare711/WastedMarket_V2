@@ -15,13 +15,15 @@ interface IWastedMarketRouter {
         uint256 wastedId,
         uint256 price,
         uint256 amount,
-        address seller
+        address seller,
+        uint256 listingId
     );
 
     event Delist(
         IWastedMarketERC1155 contractAddress,
         uint256 wastedId,
-        address seller
+        address seller,
+        uint256 listingId
     );
 
     event Bought(
@@ -31,7 +33,16 @@ interface IWastedMarketRouter {
         address seller,
         uint256 amount,
         uint256 price,
-        bool isBoughtByOffer
+        uint256 listingId
+    );
+
+    event AcceptedOffer(
+        IWastedMarketERC1155 contractAddress,
+        uint256 wastedId,
+        address buyer,
+        address seller,
+        uint256 amount,
+        uint256 price
     );
 
     event Offered(

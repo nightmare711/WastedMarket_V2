@@ -78,13 +78,21 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         uint256 price,
         uint256 amount
     ) external onlySupportedAddress(marketContract) {
-        uint256 totalAmount = marketContract.listing(
+        uint256 listingId = marketContract.listing(
             wastedId,
             price,
             amount,
             msg.sender
         );
-        emit Listing(marketContract, wastedId, price, totalAmount, msg.sender);
+
+        emit Listing(
+            marketContract,
+            wastedId,
+            price,
+            amount,
+            msg.sender,
+            listingId
+        );
     }
 
     function offer(
@@ -101,13 +109,15 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         IWastedMarketERC1155 marketContract,
         uint256 wastedId,
         address seller,
-        uint256 expectedPrice
+        uint256 expectedPrice,
+        uint256 listingId
     ) external onlySupportedAddress(marketContract) {
         uint256 amount = marketContract.buy(
             wastedId,
             seller,
             expectedPrice,
-            msg.sender
+            msg.sender,
+            listingId
         );
 
         emit Bought(
@@ -117,7 +127,7 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
             seller,
             amount,
             expectedPrice,
-            false
+            listingId
         );
     }
 
@@ -134,14 +144,13 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
             msg.sender
         );
 
-        emit Bought(
+        emit AcceptedOffer(
             marketContract,
             wastedId,
             buyer,
             msg.sender,
             amount,
-            expectedPrice,
-            true
+            expectedPrice
         );
     }
 
@@ -154,13 +163,14 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
         emit OfferCanceled(marketContract, wastedId, msg.sender);
     }
 
-    function delist(IWastedMarketERC1155 marketContract, uint256 wastedId)
-        external
-        onlySupportedAddress(marketContract)
-    {
-        marketContract.delist(wastedId, msg.sender);
+    function delist(
+        IWastedMarketERC1155 marketContract,
+        uint256 wastedId,
+        uint256 listingId
+    ) external onlySupportedAddress(marketContract) {
+        marketContract.delist(wastedId, msg.sender, listingId);
 
-        emit Delist(marketContract, wastedId, msg.sender);
+        emit Delist(marketContract, wastedId, msg.sender, listingId);
     }
 
     function setPaused(IWastedMarketERC1155 marketContract, bool _isPaused)
