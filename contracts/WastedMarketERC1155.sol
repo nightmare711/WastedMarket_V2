@@ -10,13 +10,15 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "./interface/IERC1155Support.sol";
 import "./interface/IWastedMarketERC1155.sol";
 import "./utils/AcceptedToken.sol";
+import "./utils/TokenWithdrawableBridge.sol";
 
 contract WastedMarketERC1155 is
     AcceptedToken,
     ReentrancyGuard,
     AccessControl,
     ERC1155Holder,
-    IWastedMarketERC1155
+    IWastedMarketERC1155,
+    TokenWithdrawableBridge
 {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -92,7 +94,7 @@ contract WastedMarketERC1155 is
         );
 
         wastedsOnSale[listingId][seller][wastedId].price = price;
-        wastedsOnSale[listingId][seller][wastedId].amount = price;
+        wastedsOnSale[listingId][seller][wastedId].amount = amount;
 
         emit Listing(wastedId, price, amount, seller, listingId);
 

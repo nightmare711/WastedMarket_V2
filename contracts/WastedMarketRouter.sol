@@ -17,7 +17,6 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
 
     mapping(IWastedMarketERC1155 => IERC1155Support) supportedAddress;
     bytes32 public CONTROLLER_ROLE;
-    uint256 public fee;
 
     function initialize() public initializer {
         __AccessControl_init();
@@ -34,10 +33,6 @@ contract WastedMarketRouter is IWastedMarketRouter, AccessControlUpgradeable {
             _contractSupported,
             IERC1155Support(address(0))
         );
-    }
-
-    function setFee(uint256 _fee) external onlyRole(CONTROLLER_ROLE) {
-        fee = _fee;
     }
 
     function isSupported(IWastedMarketERC1155 _contract)
